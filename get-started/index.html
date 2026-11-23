@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started - AsmFoundation</title>
+<meta name="description" content="One session from an empty folder: run an assembly server, call it from C#, build your own assembly library, and give your coding agent the SDK.">
+<meta property="og:title" content="Get started - AsmFoundation">
+<meta property="og:description" content="One session from an empty folder: run an assembly server, call it from C#, build your own assembly library, and give your coding agent the SDK.">
+<meta property="og:site_name" content="AsmFoundation">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://asmfoundation.github.io/get-started/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body class="get-started">
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap nav">
+  <a class="brand" href="../"><svg class="logo-a" viewBox="236 204 782 746" width="29" height="28" aria-hidden="true"><rect class="m" x="559" y="214" width="135" height="135"/><rect class="m" x="414" y="372" width="129" height="125"/><rect class="m" x="559" y="372" width="135" height="125"/><rect class="m" x="712" y="372" width="127" height="125"/><rect class="t" x="349" y="524" width="138" height="121"/><rect class="t" x="766" y="524" width="138" height="121"/><rect class="t" x="288" y="665" width="139" height="124"/><rect class="t" x="451" y="665" width="351" height="121"/><rect class="t" x="826" y="665" width="139" height="124"/><rect class="t" x="246" y="811" width="156" height="129"/><rect class="t" x="850" y="811" width="158" height="129"/></svg>AsmFoundation</a>
+  <nav class="links" aria-label="Site"><a class="l" href="../projects/">Projects</a><a class="l" href="../docs/">Docs</a><a class="l" href="../evidence/">Evidence</a><a class="l" href="../map/">Map</a><a class="l cur" href="../get-started/" aria-current="page">Get started</a><a class="l" href="../about/">About</a><a class="l" href="https://github.com/AsmFoundation">GitHub</a></nav>
+</header>
+<main id="main">
+<div class="wrap ph"><h1>Get started</h1><p>One session from an empty folder: run an assembly server, call it, build your own assembly library, and give your coding agent the SDK. Notes on the right say what each step does.</p></div>
+<div class="wrap pg"><div class="gs"><div class="gs-body"><section class="gs-sec" id="run-a-server"><h2>Run a server</h2><div class="gs-intro"><p>KvAsm, a gRPC key-value server in x86-64 assembly, released as a container image and a .NET client.</p>
+</div><div class="step" id="run-a-server--start-the-server"><h3>Start the server</h3><div class="c"><pre class="cmd" data-copy="docker run --rm -p 50051:50051 ghcr.io/asmfoundation/kvasm:0.3.0"><code><span class="p" aria-hidden="true">$ </span>docker run --rm -p 50051:50051 ghcr.io/asmfoundation/kvasm:0.3.0</code></pre></div><div class="n"><p><strong>KvAsm</strong> runs on linux/amd64 and listens on port 50051. To build it yourself instead, <code>docker build --target runtime -t kvasm:0.3.0 .</code> in a clone runs every server test suite first; the image exists only if all of them pass.</p>
+</div></div><div class="step" id="run-a-server--add-the-client"><h3>Add the client</h3><div class="c"><pre class="cmd" data-copy="dotnet add package KvAsm.Client"><code><span class="p" aria-hidden="true">$ </span>dotnet add package KvAsm.Client</code></pre></div><div class="n"><p>The .NET client, for .NET 8 or 10. Any language with gRPC tooling can use <a href="https://github.com/AsmFoundation/KvAsm/blob/main/proto/kvasm/v1/kvasm.proto">kvasm.proto</a> and <a href="https://github.com/AsmFoundation/KvAsm/blob/main/docs/PROTOCOL.md">the protocol's description</a> instead.</p>
+</div></div><div class="step" id="run-a-server--put-a-key-and-read-it-back"><h3>Put a key and read it back</h3><div class="c"><div class="ct">Program.cs</div><pre class="cmd" data-copy="using KvAsm.Client;
+
+using var kv = new KvAsmClient(new Uri(&quot;http://localhost:50051&quot;));
+bool created = await kv.PutAsync(&quot;user:42&quot;, &quot;Ada&quot;);   // true: new key
+string? name = await kv.GetStringAsync(&quot;user:42&quot;);    // &quot;Ada&quot;
+bool deleted = await kv.DeleteAsync(&quot;user:42&quot;);       // true"><code>using KvAsm.Client;
+
+using var kv = new KvAsmClient(new Uri(&quot;http://localhost:50051&quot;));
+bool created = await kv.PutAsync(&quot;user:42&quot;, &quot;Ada&quot;);   // true: new key
+string? name = await kv.GetStringAsync(&quot;user:42&quot;);    // &quot;Ada&quot;
+bool deleted = await kv.DeleteAsync(&quot;user:42&quot;);       // true</code></pre></div><div class="n"><p>Large values stream with <code>UploadAsync</code> and <code>DownloadAsync</code>, up to 64 MiB by default, in chunks checked by CRC-32C at both ends.</p>
+</div></div></section><section class="gs-sec" id="write-assembly-in-net"><h2>Write assembly in .NET</h2><div class="gs-intro"><p>AsmSdk builds <code>.asmproj</code> projects with <code>dotnet build</code>, for Windows, Linux and macOS on x64 and ARM64. You need the .NET SDK and nothing else.</p>
+</div><div class="step" id="write-assembly-in-net--name-the-sdk"><h3>Name the SDK</h3><div class="c"><div class="ct">global.json</div><pre class="cmd" data-copy="{ &quot;msbuild-sdks&quot;: { &quot;AsmFoundation.Sdk&quot;: &quot;0.3.0&quot; } }"><code>{ &quot;msbuild-sdks&quot;: { &quot;AsmFoundation.Sdk&quot;: &quot;0.3.0&quot; } }</code></pre></div><div class="n"><p><strong>global.json</strong> names the SDK. MSBuild fetches it from nuget.org, with the assembler and linker for your machine.</p>
+</div></div><div class="step" id="write-assembly-in-net--write-the-project"><h3>Write the project</h3><div class="c"><div class="ct">Hello/Hello.asmproj</div><pre class="cmd" data-copy="&lt;Project Sdk=&quot;AsmFoundation.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;AssemblyName&gt;hello&lt;/AssemblyName&gt;
+    &lt;RuntimeIdentifiers&gt;win-x64;linux-x64&lt;/RuntimeIdentifiers&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;"><code>&lt;Project Sdk=&quot;AsmFoundation.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;AssemblyName&gt;hello&lt;/AssemblyName&gt;
+    &lt;RuntimeIdentifiers&gt;win-x64;linux-x64&lt;/RuntimeIdentifiers&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;</code></pre></div><div class="n"><p>The project file reads like a <code>.csproj</code>, and its properties are .NET's own. Every <code>.asm</code> file next to it is a source. Add <code>osx-arm64</code> or <code>linux-arm64</code> and a <code>.s</code> file with the ARM64 code to build those too.</p>
+</div></div><div class="step" id="write-assembly-in-net--write-the-code"><h3>Write the code</h3><div class="c"><div class="ct">Hello/hello.asm</div><pre class="cmd" data-copy="default rel
+%include &quot;asmsdk.inc&quot;
+
+section .text
+FUNCTION hello_add, 2           ; int hello_add(int a, int b)
+    lea     eax, [ARG1 + ARG2]  ; rcx + rdx on Windows, rdi + rsi on Linux
+    RETURN
+ENDFUNCTION
+
+%ifdef LINUX
+section .note.GNU-stack noalloc noexec nowrite progbits
+%endif"><code>default rel
+%include &quot;asmsdk.inc&quot;
+
+section .text
+FUNCTION hello_add, 2           ; int hello_add(int a, int b)
+    lea     eax, [ARG1 + ARG2]  ; rcx + rdx on Windows, rdi + rsi on Linux
+    RETURN
+ENDFUNCTION
+
+%ifdef LINUX
+section .note.GNU-stack noalloc noexec nowrite progbits
+%endif</code></pre></div><div class="n"><p><code>FUNCTION</code>, <code>ARG1</code> and <code>RETURN</code> come from <code>asmsdk.inc</code>. They hide the difference between the Windows and Linux calling conventions, so one source builds for both.</p>
+</div></div><div class="step" id="write-assembly-in-net--build-both-platforms"><h3>Build both platforms</h3><div class="c"><pre class="cmd" data-copy="dotnet build Hello/Hello.asmproj"><code><span class="p" aria-hidden="true">$ </span>dotnet build Hello/Hello.asmproj</code></pre><pre class="out"><code>Hello/bin/Debug/freestanding/win-x64/hello.dll
+Hello/bin/Debug/freestanding/linux-x64/libhello.so</code></pre></div><div class="n"><p>One build, one library per platform. C# calls it with <code>[LibraryImport(&quot;hello&quot;)]</code>; <a href="https://asmfoundation.github.io/AsmSdk/guide/getting-started.html">the getting started guide</a> adds ARM64, a program and the C# caller.</p>
+</div></div></section><section class="gs-sec" id="teach-your-coding-agent"><h2>Teach your coding agent</h2><div class="gs-intro"><p>The asmsdk plugin gives Claude Code the SDK's rules and recipes, a linter for <code>.asmproj</code> projects and a scaffolder.</p>
+</div><div class="step" id="teach-your-coding-agent--add-the-marketplace"><h3>Add the marketplace</h3><div class="c"><pre class="cmd" data-copy="/plugin marketplace add AsmFoundation/AsmClaudeMarketplace"><code><span class="p" aria-hidden="true">$ </span>/plugin marketplace add AsmFoundation/AsmClaudeMarketplace</code></pre></div><div class="n"><p>Type it in Claude Code. The marketplace is called <code>asmfoundation</code>; it holds one plugin per topic.</p>
+</div></div><div class="step" id="teach-your-coding-agent--install-the-plugin"><h3>Install the plugin</h3><div class="c"><pre class="cmd" data-copy="/plugin install asmsdk@asmfoundation"><code><span class="p" aria-hidden="true">$ </span>/plugin install asmsdk@asmfoundation</code></pre></div><div class="n"><p>The plugin follows AsmSdk's releases: plugin 0.3.0 teaches SDK 0.3.0.</p>
+</div></div><div class="step" id="teach-your-coding-agent--ask-for-a-project"><h3>Ask for a project</h3><div class="c"><pre class="cmd wrap" data-copy="Create an AsmSdk library that sums an int array, for Windows and Linux on x64,
+with a C# test that calls it."><code>Create an AsmSdk library that sums an int array, for Windows and Linux on x64,
+with a C# test that calls it.</code></pre></div><div class="n"><p>In our evaluation of plugin 0.1.0, agents with the plugin built 12 of 12 test projects; without it, 4 of 12.</p>
+</div></div></section></div><nav class="gs-menu" aria-label="On this page"><p class="gs-menu-t">On this page</p><ol><li data-sec="run-a-server"><a href="#run-a-server">Run a server</a><ol><li><a href="#run-a-server--start-the-server">Start the server</a></li><li><a href="#run-a-server--add-the-client">Add the client</a></li><li><a href="#run-a-server--put-a-key-and-read-it-back">Put a key and read it back</a></li></ol></li><li data-sec="write-assembly-in-net"><a href="#write-assembly-in-net">Write assembly in .NET</a><ol><li><a href="#write-assembly-in-net--name-the-sdk">Name the SDK</a></li><li><a href="#write-assembly-in-net--write-the-project">Write the project</a></li><li><a href="#write-assembly-in-net--write-the-code">Write the code</a></li><li><a href="#write-assembly-in-net--build-both-platforms">Build both platforms</a></li></ol></li><li data-sec="teach-your-coding-agent"><a href="#teach-your-coding-agent">Teach your coding agent</a><ol><li><a href="#teach-your-coding-agent--add-the-marketplace">Add the marketplace</a></li><li><a href="#teach-your-coding-agent--install-the-plugin">Install the plugin</a></li><li><a href="#teach-your-coding-agent--ask-for-a-project">Ask for a project</a></li></ol></li></ol></nav></div></div>
+
+</main>
+<footer><div class="wrap row">
+  <div><b>AsmFoundation</b>Free Open Source Assembly Software.<br><a href="https://github.com/AsmFoundation">github.com/AsmFoundation</a></div>
+  <div><b>Licence</b>Every project is Apache-2.0.</div>
+  <div><b>Security</b>Report vulnerabilities privately, through a repository's Security tab.</div>
+  <div><b>Contribute</b>Issues and pull requests are welcome. A speed change needs a paired measurement.</div>
+</div></footer>
+<script src="../assets/site.js"></script>
+
+</body>
+</html>
