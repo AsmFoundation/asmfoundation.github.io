@@ -131,7 +131,7 @@ section.s { padding: 64px 0; border-top: 1px solid var(--hair); }
 .order code { display: block; font: 500 12px/1.8 var(--mono); color: var(--ink); overflow-wrap: anywhere; }
 .sheet .links { margin: 10px 0 0; display: flex; gap: 18px; flex-wrap: wrap; font-size: 14.5px; }
 
-/* ---------------------------------------------------------------------------------------------- Evidence */
+/* ---------------------------------------------------------------------------------------------- Benchmarks */
 .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; }
 .chart { padding: 26px 0 30px; border-top: 1px solid var(--hair); position: relative; }
 .chart h2 { margin: 0 0 4px; font-size: 19px; color: var(--ink); font-stretch: var(--wide); }
@@ -163,7 +163,7 @@ section.s { padding: 64px 0; border-top: 1px solid var(--hair); }
 .book li a { color: var(--text); text-decoration: none; } .book li a:hover { color: var(--teal); text-decoration: underline; }
 .book li span { font-size: 13px; color: var(--soft); }
 
-/* ---------------------------------------------------------------------------------------------- Map */
+/* ---------------------------------------------------------------------------------------------- Architecture */
 .key { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--soft); margin: 0 0 16px; }
 .key i.k { display: inline-block; width: 24px; height: 7px; margin-right: 8px; vertical-align: 2px; }
 .k.rel { background: var(--ink); } .k.dev { background: var(--teal); } .k.des { background: var(--amber); }

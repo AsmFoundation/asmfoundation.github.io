@@ -36,7 +36,7 @@
    */
   function flash(b, text) { b.textContent = text; setTimeout(() => { b.textContent = "Copy"; }, 1400); }
 
-  // ---------------------------------------------------------------------------------------- Evidence tooltips
+  // ---------------------------------------------------------------------------------------- Benchmarks tooltips
   document.querySelectorAll(".chart").forEach(chart => {
     const tip = document.createElement("div"); tip.className = "tip"; tip.setAttribute("aria-hidden", "true");
     chart.appendChild(tip);
@@ -50,7 +50,7 @@
     chart.addEventListener("mouseleave", () => { tip.style.display = "none"; });
   });
 
-  // ---------------------------------------------------------------------------------------- Map readout
+  // ---------------------------------------------------------------------------------------- Architecture readout
   const ro = document.getElementById("ro");
   if (ro) document.querySelectorAll(".room").forEach(room => {
     /** Shows this room's description, "Name: text", in the readout. @returns {void} */
