@@ -56,8 +56,8 @@ bool deleted = await kv.DeleteAsync(&quot;user:42&quot;);       // true"><code c
 <span class="hljs-built_in">bool</span> created = <span class="hljs-keyword">await</span> kv.PutAsync(<span class="hljs-string">&quot;user:42&quot;</span>, <span class="hljs-string">&quot;Ada&quot;</span>);   <span class="hljs-comment">// true: new key</span>
 <span class="hljs-built_in">string</span>? name = <span class="hljs-keyword">await</span> kv.GetStringAsync(<span class="hljs-string">&quot;user:42&quot;</span>);    <span class="hljs-comment">// &quot;Ada&quot;</span>
 <span class="hljs-built_in">bool</span> deleted = <span class="hljs-keyword">await</span> kv.DeleteAsync(<span class="hljs-string">&quot;user:42&quot;</span>);       <span class="hljs-comment">// true</span></code></pre></div><div class="n"><p>Large values stream with <code>UploadAsync</code> and <code>DownloadAsync</code>, up to 64 MiB by default, in chunks checked by CRC-32C at both ends.</p>
-</div></div></section><section class="gs-sec" id="write-assembly-in-net"><h2>Write assembly in .NET</h2><div class="gs-intro"><p>AsmSdk builds <code>.asmproj</code> projects with <code>dotnet build</code>, for Windows, Linux and macOS on x64 and ARM64. You need the .NET SDK and nothing else.</p>
-</div><div class="step" id="write-assembly-in-net--name-the-sdk"><h3>Name the SDK</h3><div class="c"><div class="ct">global.json</div><pre class="cmd" data-copy="{ &quot;msbuild-sdks&quot;: { &quot;AsmFoundation.Sdk&quot;: &quot;0.3.0&quot; } }"><code class="hljs"><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;msbuild-sdks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;AsmFoundation.Sdk&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.3.0&quot;</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span></code></pre></div><div class="n"><p><strong>global.json</strong> names the SDK. MSBuild fetches it from nuget.org, with the assembler and linker for your machine.</p>
+</div></div></section><section class="gs-sec" id="write-assembly-in-net"><h2>Write assembly in .NET</h2><div class="gs-intro"><p>AsmSdk builds <code>.asmproj</code> projects with <code>dotnet build</code>, for Windows, Linux and macOS on x64 and ARM64, and for WebAssembly. You need the .NET SDK and nothing else.</p>
+</div><div class="step" id="write-assembly-in-net--name-the-sdk"><h3>Name the SDK</h3><div class="c"><div class="ct">global.json</div><pre class="cmd" data-copy="{ &quot;msbuild-sdks&quot;: { &quot;AsmFoundation.Sdk&quot;: &quot;0.4.0&quot; } }"><code class="hljs"><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;msbuild-sdks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;AsmFoundation.Sdk&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;0.4.0&quot;</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span></code></pre></div><div class="n"><p><strong>global.json</strong> names the SDK. MSBuild fetches it from nuget.org, with the assembler and linker for your machine.</p>
 </div></div><div class="step" id="write-assembly-in-net--write-the-project"><h3>Write the project</h3><div class="c"><div class="ct">Hello/Hello.asmproj</div><pre class="cmd" data-copy="&lt;Project Sdk=&quot;AsmFoundation.Sdk&quot;&gt;
   &lt;PropertyGroup&gt;
     &lt;AssemblyName&gt;hello&lt;/AssemblyName&gt;
@@ -69,34 +69,20 @@ bool deleted = await kv.DeleteAsync(&quot;user:42&quot;);       // true"><code c
     <span class="hljs-tag">&lt;<span class="hljs-name">RuntimeIdentifiers</span>&gt;</span>win-x64;linux-x64<span class="hljs-tag">&lt;/<span class="hljs-name">RuntimeIdentifiers</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-name">PropertyGroup</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">Project</span>&gt;</span></code></pre></div><div class="n"><p>The project file reads like a <code>.csproj</code>, and its properties are .NET's own. Every <code>.asm</code> file next to it is a source. Add <code>osx-arm64</code> or <code>linux-arm64</code> and a <code>.s</code> file with the ARM64 code to build those too.</p>
-</div></div><div class="step" id="write-assembly-in-net--write-the-code"><h3>Write the code</h3><div class="c"><div class="ct">Hello/hello.asm</div><pre class="cmd" data-copy="default rel
-%include &quot;asmsdk.inc&quot;
-
-section .text
-FUNCTION hello_add, 2           ; int hello_add(int a, int b)
+</div></div><div class="step" id="write-assembly-in-net--write-the-code"><h3>Write the code</h3><div class="c"><div class="ct">Hello/hello.asm</div><pre class="cmd" data-copy="PROTO int32_t hello_add(int32_t a, int32_t b)
+FUNCTION hello_add, 2
     lea     eax, [ARG1 + ARG2]  ; rcx + rdx on Windows, rdi + rsi on Linux
     RETURN
-ENDFUNCTION
-
-%ifdef LINUX
-section .note.GNU-stack noalloc noexec nowrite progbits
-%endif"><code class="hljs"><span class="hljs-meta">default</span> <span class="hljs-built_in">rel</span>
-<span class="hljs-meta">%include</span> <span class="hljs-string">&quot;asmsdk.inc&quot;</span>
-
-<span class="hljs-meta">section</span> .text
-<span class="hljs-meta">FUNCTION</span> hello_add, <span class="hljs-number">2</span>           <span class="hljs-comment">; int hello_add(int a, int b)</span>
+ENDFUNCTION"><code class="hljs">PROTO int32_t hello_add(int32_t a, int32_t b)
+<span class="hljs-meta">FUNCTION</span> hello_add, <span class="hljs-number">2</span>
     <span class="hljs-keyword">lea</span>     <span class="hljs-built_in">eax</span>, [<span class="hljs-built_in">ARG1</span> + <span class="hljs-built_in">ARG2</span>]  <span class="hljs-comment">; rcx + rdx on Windows, rdi + rsi on Linux</span>
     <span class="hljs-keyword">RETURN</span>
-<span class="hljs-meta">ENDFUNCTION</span>
-
-<span class="hljs-meta">%ifdef</span> LINUX
-<span class="hljs-meta">section</span> .note.GNU-stack noalloc noexec nowrite progbits
-<span class="hljs-meta">%endif</span></code></pre></div><div class="n"><p><code>FUNCTION</code>, <code>ARG1</code> and <code>RETURN</code> come from <code>asmsdk.inc</code>. They hide the difference between the Windows and Linux calling conventions, so one source builds for both.</p>
+<span class="hljs-meta">ENDFUNCTION</span></code></pre></div><div class="n"><p><code>FUNCTION</code>, <code>ARG1</code> and <code>RETURN</code> come from the SDK's <code>asmsdk.inc</code>, which it puts in front of every source. They hide the difference between the Windows and Linux calling conventions, so one source builds for both. <code>PROTO</code> is the function's C prototype.</p>
 </div></div><div class="step" id="write-assembly-in-net--build-both-platforms"><h3>Build both platforms</h3><div class="c"><pre class="cmd" data-copy="dotnet build Hello/Hello.asmproj"><code class="hljs"><span class="p" aria-hidden="true">$ </span><span class="hljs-built_in">dotnet</span> build Hello/Hello.asmproj</code></pre><pre class="out"><code>Hello/bin/Debug/freestanding/win-x64/hello.dll
-Hello/bin/Debug/freestanding/linux-x64/libhello.so</code></pre></div><div class="n"><p>One build, one library per platform. C# calls it with <code>[LibraryImport(&quot;hello&quot;)]</code>; <a href="https://asmfoundation.github.io/AsmSdk/guide/getting-started.html">the getting started guide</a> adds ARM64, a program and the C# caller.</p>
+Hello/bin/Debug/freestanding/linux-x64/libhello.so</code></pre></div><div class="n"><p>One build, one library per platform, and <code>hello.h</code> for C. A C# project that references it calls <code>Hello.Hello.HelloAdd(40, 2)</code>, which the SDK writes from the <code>PROTO</code> line; <a href="https://asmfoundation.github.io/AsmSdk/guide/getting-started.html">the getting started guide</a> adds ARM64, a program and the C# caller.</p>
 </div></div></section><section class="gs-sec" id="teach-your-coding-agent"><h2>Teach your coding agent</h2><div class="gs-intro"><p>The asmsdk plugin gives Claude Code the SDK's rules and recipes, a linter for <code>.asmproj</code> projects and a scaffolder.</p>
 </div><div class="step" id="teach-your-coding-agent--add-the-marketplace"><h3>Add the marketplace</h3><div class="c"><pre class="cmd" data-copy="/plugin marketplace add AsmFoundation/AsmClaudeMarketplace"><code class="hljs"><span class="hljs-keyword">/plugin</span> marketplace add <span class="hljs-string">AsmFoundation/AsmClaudeMarketplace</span></code></pre></div><div class="n"><p>Type it in Claude Code. The marketplace is called <code>asmfoundation</code>; it holds one plugin per topic.</p>
-</div></div><div class="step" id="teach-your-coding-agent--install-the-plugin"><h3>Install the plugin</h3><div class="c"><pre class="cmd" data-copy="/plugin install asmsdk@asmfoundation"><code class="hljs"><span class="hljs-keyword">/plugin</span> install <span class="hljs-string">asmsdk@asmfoundation</span></code></pre></div><div class="n"><p>The plugin follows AsmSdk's releases: plugin 0.3.0 teaches SDK 0.3.0.</p>
+</div></div><div class="step" id="teach-your-coding-agent--install-the-plugin"><h3>Install the plugin</h3><div class="c"><pre class="cmd" data-copy="/plugin install asmsdk@asmfoundation"><code class="hljs"><span class="hljs-keyword">/plugin</span> install <span class="hljs-string">asmsdk@asmfoundation</span></code></pre></div><div class="n"><p>The plugin follows AsmSdk's releases: plugin 0.4.0 teaches SDK 0.4.0.</p>
 </div></div><div class="step" id="teach-your-coding-agent--ask-for-a-project"><h3>Ask for a project</h3><div class="c"><pre class="cmd wrap" data-copy="Create an AsmSdk library that sums an int array, for Windows and Linux on x64,
 with a C# test that calls it."><code class="hljs">Create an AsmSdk library that sums an int array, for Windows and Linux on x64,
 with a C# test that calls it.</code></pre></div><div class="n"><p>In our evaluation of plugin 0.1.0, agents with the plugin built 12 of 12 test projects; without it, 4 of 12.</p>
