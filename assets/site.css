@@ -119,9 +119,14 @@ section.s { padding: 64px 0; border-top: 1px solid var(--hair); }
 .sheets { display: grid; grid-template-columns: 1fr 1fr; gap: 40px 44px; }
 .sheet { border-top: 7px solid var(--ink); padding-top: 14px; }
 .sheet.dev { border-top-color: var(--teal); } .sheet.des { border-top-color: var(--amber); }
-.sheet header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.sheet h2 { margin: 0; font-stretch: var(--wide); font-weight: 800; font-size: 30px; letter-spacing: -.015em; color: var(--ink); overflow-wrap: anywhere; }
-.sheet .stamp { font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; text-align: right; }
+/* A name too long to share its line with the stamp (AsmClaudeMarketplace) pushes the stamp to the next line, kept
+   right by its auto margin. break-word, not anywhere: "anywhere" also shrinks the name's minimum width, so the flex
+   row squeezed the name beside the stamp and broke it mid-word ("AsmClaudeMarketplac/e"). max-width caps the
+   name's automatic minimum width at the line, so on a screen narrower than the name break-word still breaks it
+   (min-width: 0 instead would let the row squeeze it again). */
+.sheet header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+.sheet h2 { margin: 0; font-stretch: var(--wide); font-weight: 800; font-size: 30px; letter-spacing: -.015em; color: var(--ink); overflow-wrap: break-word; max-width: 100%; }
+.sheet .stamp { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; text-align: right; }
 .sheet .stamp small { display: block; font-weight: 400; font-size: 13px; color: var(--soft); }
 .sheet .sub { margin: 4px 0 14px; font-size: 16px; color: var(--soft); }
 .sheet .cols { display: grid; grid-template-columns: 1.05fr 1fr; gap: 24px; }
